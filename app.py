@@ -6,7 +6,11 @@ from cs50 import SQL
 app = Flask(__name__)
 app.secret_key = "paynow-secret-key"
 
-db_path = os.path.join(os.path.dirname(__file__), "users.db")
+db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "users.db")
+
+if not os.path.exists(db_path):
+    open(db_path, 'w').close()
+
 db = SQL(f"sqlite:///{db_path}")
 
 db.execute("""
