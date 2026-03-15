@@ -30,16 +30,16 @@
             {% if transactions %}
                 <div class="divide-y">
                 {% for t in transactions %}
-                <div class="py-3 flex justify-between items-center">
-                    <div>
-                        <p class="text-sm font-medium text-gray-800">{{ t.other_party }}</p>
-                        <p class="text-xs text-gray-400">{{ t.timestamp }}</p>
-                    </div>
-                    <span class="text-sm font-semibold {% if t.type == 'Sent' %}text-red-500{% else %}text-green-500{% endif %}">
-                        {% if t.type == 'Sent' %}-{% else %}+{% endif %}${{ "%.2f"|format(t.amount) }}
-                    </span>
+                <a href="/transaction/{{ t.id }}" class="py-3 flex justify-between items-center hover:bg-gray-50 rounded-lg px-2 -mx-2 transition">
+                <div>
+                <p class="text-sm font-medium text-gray-800">{{ t.other_party }}</p>
+                <p class="text-xs text-gray-400">{{ t.timestamp }}</p>
                 </div>
-                {% endfor %}
+    <span class="text-sm font-semibold {% if t.type == 'Sent' %}text-red-500{% else %}text-green-500{% endif %}">
+        {% if t.type == 'Sent' %}-{% else %}+{% endif %}${{ "%.2f"|format(t.amount) }}
+    </span>
+</a>
+{% endfor %}
                 </div>
             {% else %}
                 <p class="text-sm text-gray-400">No transactions yet.</p>

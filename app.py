@@ -29,6 +29,7 @@ db.execute("""
         sender_id INTEGER NOT NULL,
         recipient_id INTEGER NOT NULL,
         amount REAL NOT NULL,
+        status TEXT DEFAULT 'CREATED',
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )
 """)
@@ -75,7 +76,7 @@ def register():
         db.execute("INSERT INTO users (name, phone, password_hash) VALUES (?, ?, ?)",
                    name, phone, password_hash)
 
-        return "Registered successfully!"
+        return redirect(url_for("login"))
 
     return render_template("register.html")
 
@@ -88,7 +89,7 @@ def dashboard():
     user = db.execute("SELECT * FROM users WHERE id = ?", session["user_id"])[0]
 
     rows = db.execute("""
-        SELECT t.amount, t.timestamp,
+        SELECT t.id, t.amount, t.timestamp,
                s.name as sender_name, r.name as recipient_name,
                t.sender_id, t.recipient_id
         FROM transactions t
@@ -102,6 +103,7 @@ def dashboard():
     for row in rows:
         if row["sender_id"] == session["user_id"]:
             transactions.append({
+                "id": row["id"],
                 "type": "Sent",
                 "other_party": row["recipient_name"],
                 "amount": row["amount"],
@@ -109,6 +111,7 @@ def dashboard():
             })
         else:
             transactions.append({
+                "id": row["id"],
                 "type": "Received",
                 "other_party": row["sender_name"],
                 "amount": row["amount"],
@@ -155,7 +158,7 @@ def send():
                    amount, session["user_id"])
         db.execute("UPDATE users SET balance = balance + ? WHERE id = ?",
                    amount, recipient["id"])
-        db.execute("INSERT INTO transactions (sender_id, recipient_id, amount) VALUES (?, ?, ?)",
+        db.execute("INSERT INTO transactions (sender_id, recipient_id, amount, status) VALUES (?, ?, ?, 'CREATED')",
                    session["user_id"], recipient["id"], amount)
 
         return render_template("send.html", success=f"Sent ${amount} to {recipient['name']}")
@@ -169,7 +172,7 @@ def history():
         return redirect(url_for("login"))
 
     rows = db.execute("""
-        SELECT t.amount, t.timestamp,
+        SELECT t.id, t.amount, t.timestamp,
                s.name as sender_name, r.name as recipient_name,
                t.sender_id, t.recipient_id
         FROM transactions t
@@ -183,6 +186,7 @@ def history():
     for row in rows:
         if row["sender_id"] == session["user_id"]:
             transactions.append({
+                "id": row["id"],
                 "type": "Sent",
                 "other_party": row["recipient_name"],
                 "amount": row["amount"],
@@ -190,6 +194,7 @@ def history():
             })
         else:
             transactions.append({
+                "id": row["id"],
                 "type": "Received",
                 "other_party": row["sender_name"],
                 "amount": row["amount"],
@@ -197,6 +202,39 @@ def history():
             })
 
     return render_template("history.html", transactions=transactions)
+
+
+@app.route("/transaction/<int:transaction_id>")
+def transaction(transaction_id):
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    rows = db.execute("""
+        SELECT t.id, t.amount, t.timestamp, t.status,
+               s.name as sender_name, r.name as recipient_name,
+               t.sender_id, t.recipient_id
+        FROM transactions t
+        JOIN users s ON t.sender_id = s.id
+        JOIN users r ON t.recipient_id = r.id
+        WHERE t.id = ?
+    """, transaction_id)
+
+    if not rows:
+        return redirect(url_for("dashboard"))
+
+    t = rows[0]
+
+    if t["sender_id"] != session["user_id"] and t["recipient_id"] != session["user_id"]:
+        return redirect(url_for("dashboard"))
+
+    states = ["CREATED", "IN_REVIEW", "PROCESSING", "PARTNER_PROCESSING", "COMPLETED"]
+    current_index = states.index(t["status"]) if t["status"] in states else 0
+
+    return render_template("tracker.html",
+                           transaction=t,
+                           states=states,
+                           current_index=current_index)
+
 
 @app.route("/logout")
 def logout():
