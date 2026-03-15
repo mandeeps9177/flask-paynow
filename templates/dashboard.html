@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PayNow - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <nav class="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-blue-500">PayNow</h1>
+        <div class="flex gap-4 text-sm">
+            <a href="/send" class="text-gray-600 hover:text-blue-500">Send Money</a>
+            <a href="/history" class="text-gray-600 hover:text-blue-500">History</a>
+            <a href="/logout" class="text-red-400 hover:text-red-600">Logout</a>
+        </div>
+    </nav>
+
+    <div class="max-w-2xl mx-auto px-4 py-8">
+
+        <div class="bg-blue-500 text-white rounded-xl p-6 mb-6 shadow">
+            <p class="text-sm opacity-80 mb-1">Welcome back</p>
+            <h2 class="text-2xl font-bold mb-4">{{ name }}</h2>
+            <p class="text-sm opacity-80">Available balance</p>
+            <p class="text-4xl font-bold">${{ "%.2f"|format(balance) }}</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Transactions</h3>
+
+            {% if transactions %}
+                <div class="divide-y">
+                {% for t in transactions %}
+                <div class="py-3 flex justify-between items-center">
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">{{ t.other_party }}</p>
+                        <p class="text-xs text-gray-400">{{ t.timestamp }}</p>
+                    </div>
+                    <span class="text-sm font-semibold {% if t.type == 'Sent' %}text-red-500{% else %}text-green-500{% endif %}">
+                        {% if t.type == 'Sent' %}-{% else %}+{% endif %}${{ "%.2f"|format(t.amount) }}
+                    </span>
+                </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-sm text-gray-400">No transactions yet.</p>
+            {% endif %}
+        </div>
+
+    </div>
+</body>
+</html>

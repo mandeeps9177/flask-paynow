@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PayNow - Send Money</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <nav class="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-blue-500">PayNow</h1>
+        <a href="/dashboard" class="text-sm text-gray-600 hover:text-blue-500">← Back</a>
+    </nav>
+
+    <div class="max-w-md mx-auto px-4 py-8">
+        <div class="bg-white rounded-xl shadow p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">Send Money</h2>
+
+            {% if error %}
+            <div class="bg-red-100 text-red-600 text-sm px-4 py-2 rounded mb-4">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            {% if success %}
+            <div class="bg-green-100 text-green-600 text-sm px-4 py-2 rounded mb-4">
+                {{ success }}
+            </div>
+            {% endif %}
+
+            <form method="post" action="/send">
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-600 mb-1">Recipient phone number</label>
+                    <input type="text" name="phone"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        placeholder="e.g. 98765432">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm text-gray-600 mb-1">Amount ($)</label>
+                    <input type="number" name="amount" min="1"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        placeholder="e.g. 50">
+                </div>
+                <button type="submit"
+                    class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-lg text-sm transition">
+                    Send Money
+                </button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
